@@ -1,0 +1,32 @@
+.DS_Store
+
+# Build outputs
+build/
+cmake-build-*/
+*.o
+*.a
+*.so
+*.dylib
+*.exe
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Data and generated artifacts
+data/raw/
+data/processed/
+reports/figures/*.png
+reports/figures/*.svg
+reports/figures/*.pdf
+reports/*.pdf
+benchmarks/results/
+
+# IDEs
+.idea/
+.vscode/
