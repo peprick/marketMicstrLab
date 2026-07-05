@@ -2,7 +2,7 @@
 
 ## Phase 1: Scaffold
 
-Status: started
+Status: complete
 
 Deliverables:
 
@@ -13,18 +13,21 @@ Deliverables:
 
 ## Phase 2: Data Schema and Capture
 
-Requires explicit approval before implementation.
+Status: partially complete
 
 Deliverables:
 
-- Raw JSONL capture format.
-- Normalized event schema.
-- Small sample data capture.
-- Data integrity notes.
+- Raw JSONL capture format. Done.
+- Normalized event schema. Done.
+- Offline normalization pipeline and CLI. Done.
+- Bounded Kraken WebSocket capture CLI. Done.
+- End-to-end capture-to-dataset CLI. Done.
+- Small committed sample data capture. Not started.
+- Data integrity notes. Started in schema docs.
 
 ## Phase 3: C++ Order-Book Replay
 
-Requires explicit approval before implementation.
+Status: not started
 
 Deliverables:
 
@@ -34,21 +37,24 @@ Deliverables:
 - Deterministic replay CLI.
 - Unit tests for core book behavior.
 
+Note: a Python reference order book now exists and should guide the future C++ version.
+
 ## Phase 4: Research Pipeline
 
-Requires explicit approval before implementation.
+Status: partially complete
 
 Deliverables:
 
-- Feature generation.
-- Label generation.
-- Baseline models.
-- Walk-forward validation.
-- Charts.
+- Feature generation. Done for book-derived features.
+- Label generation. Done for future mid-price direction.
+- Dataset builder CLI. Done.
+- Baseline models. Not started.
+- Walk-forward validation. Not started.
+- Charts. Not started.
 
 ## Phase 5: Execution Simulator
 
-Requires explicit approval before implementation.
+Status: not started
 
 Deliverables:
 
@@ -60,7 +66,7 @@ Deliverables:
 
 ## Phase 6: Portfolio Finish
 
-Requires explicit approval before implementation.
+Status: not started
 
 Deliverables:
 
