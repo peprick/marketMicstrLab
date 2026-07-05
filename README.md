@@ -21,6 +21,7 @@ The Python research skeleton is in place and tested:
 - Dataset builder CLI for labeled feature rows.
 - Kraken WebSocket raw capture CLI with bounded capture by message count or time.
 - End-to-end capture-to-dataset CLI for reproducible pipeline runs.
+- Kraken book checksum validation during replay/dataset construction.
 
 No predictive model, execution simulator, or C++ order-book implementation has been implemented yet.
 
@@ -123,6 +124,7 @@ python -m market_micstr_lab.cli.capture_dataset \
   --feature-depth 1 \
   --max-messages 100 \
   --horizon 10 \
+  --validate-checksum \
   --validate
 ```
 

@@ -55,10 +55,10 @@ L2 order-book snapshots and incremental updates from a public WebSocket feed.
 - Dataset builder CLI.
 - Bounded Kraken WebSocket raw capture CLI.
 - End-to-end capture-to-dataset CLI.
+- Kraken book checksum validation.
 
 ## Near-Term Next Steps
 
 - Add committed fixture data with non-empty raw and processed examples.
-- Add checksum validation for captured book messages.
 - Add baseline research scripts for simple imbalance prediction.
 - Add chart generation for mid-price, spread, and imbalance.

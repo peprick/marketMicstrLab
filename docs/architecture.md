@@ -51,6 +51,7 @@ The C++ implementation has not started yet beyond the build scaffold.
 - Capture bounded raw Kraken WebSocket data.
 - Maintain a reference order book for replay correctness.
 - Validate book state.
+- Validate Kraken book checksums when exchange checksums are present.
 - Generate feature rows after book events.
 - Add future mid-price labels.
 - Build labeled JSONL datasets from the command line.

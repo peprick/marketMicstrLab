@@ -1,5 +1,10 @@
-
 from decimal import Decimal
+from zlib import crc32
+
+
+def _kraken_checksum_value(value: Decimal) -> str:
+    normalized = format(value, "f").replace(".", "").lstrip("0")
+    return normalized or "0"
 
 
 class OrderBook:
@@ -94,6 +99,42 @@ class OrderBook:
         
         
         
+    def kraken_checksum(self, depth: int = 10) -> int:
+        checksum_parts = []
+
+        for price, qty in self.top_asks(depth):
+            checksum_parts.append(_kraken_checksum_value(price))
+            checksum_parts.append(_kraken_checksum_value(qty))
+
+        for price, qty in self.top_bids(depth):
+            checksum_parts.append(_kraken_checksum_value(price))
+            checksum_parts.append(_kraken_checksum_value(qty))
+
+        checksum_input = "".join(checksum_parts).encode("ascii")
+        return crc32(checksum_input) & 0xFFFFFFFF
+
+
+    def checksum_errors(self, event: dict, depth: int = 10) -> list[str]:
+        exchange_checksum = event.get("checksum")
+        if exchange_checksum is None:
+            return []
+
+        try:
+            expected_checksum = int(exchange_checksum)
+        except (TypeError, ValueError):
+            return [f"invalid checksum value: {exchange_checksum}"]
+
+        local_checksum = self.kraken_checksum(depth=depth)
+        if local_checksum != expected_checksum:
+            return [
+                f"checksum mismatch: exchange={expected_checksum}, local={local_checksum}"
+            ]
+
+        return []
+
+
+        
+        
     
     def validation_errors(self) -> list[str]:
         errors = []
@@ -123,4 +164,3 @@ class OrderBook:
         errors = self.validation_errors()
         if errors:
             raise ValueError("; ".join(errors))
-

@@ -1,5 +1,6 @@
 import pytest
 from decimal import Decimal
+from zlib import crc32
 
 from market_micstr_lab.book.order_book import OrderBook
 
@@ -68,6 +69,42 @@ def test_update_changes_existing_level_quantity() -> None:
     )
 
     assert book.best_bid() == (Decimal("100.00"), Decimal("1.25"))
+
+
+def test_kraken_checksum_uses_top_asks_then_bids() -> None:
+    book = OrderBook()
+
+    book.apply(
+        {
+            "channel": "book",
+            "event_type": "snapshot",
+            "bids": [["100.00", "3.0"], ["99.50", "1.25"]],
+            "asks": [["100.50", "0.0100"], ["101.00", "2"]],
+        }
+    )
+
+    checksum_input = "1005010010100210000309950125"
+    expected_checksum = crc32(checksum_input.encode("ascii")) & 0xFFFFFFFF
+
+    assert book.kraken_checksum(depth=10) == expected_checksum
+
+
+def test_checksum_errors_compare_event_checksum() -> None:
+    book = OrderBook()
+    event = {
+        "channel": "book",
+        "event_type": "snapshot",
+        "bids": [["100.00", "3.0"]],
+        "asks": [["100.50", "1.0"]],
+    }
+
+    book.apply(event)
+    checksum = book.kraken_checksum()
+
+    assert book.checksum_errors({**event, "checksum": checksum}) == []
+    assert book.checksum_errors({**event, "checksum": checksum + 1}) == [
+        f"checksum mismatch: exchange={checksum + 1}, local={checksum}"
+    ]
     
     
     

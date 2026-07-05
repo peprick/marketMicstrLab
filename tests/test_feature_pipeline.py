@@ -80,6 +80,23 @@ def test_feature_rows_validation_raises_on_crossed_book() -> None:
         feature_rows_from_events(events, validate=True)
 
 
+def test_feature_rows_checksum_validation_raises_on_mismatch() -> None:
+    events = [
+        {
+            "channel": "book",
+            "event_type": "snapshot",
+            "recv_seq": 1,
+            "checksum": 123,
+            "symbol": "BTC/USD",
+            "bids": [["100.00", "3.0"]],
+            "asks": [["100.50", "1.0"]],
+        }
+    ]
+
+    with pytest.raises(ValueError, match="checksum mismatch"):
+        feature_rows_from_events(events, validate_checksum=True)
+
+
 def test_write_feature_rows_jsonl(tmp_path) -> None:
     input_path = tmp_path / "book_events.jsonl"
     output_path = tmp_path / "features.jsonl"

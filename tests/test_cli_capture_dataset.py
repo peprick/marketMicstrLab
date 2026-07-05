@@ -113,3 +113,5 @@ def test_capture_dataset_cli_help() -> None:
 
     assert "Capture Kraken book data, normalize it, and build labeled features." in result.stdout
     assert "--feature-depth" in result.stdout
+    assert "--validate-checksum" in result.stdout
+    assert "--checksum-depth" in result.stdout
