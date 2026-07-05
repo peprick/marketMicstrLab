@@ -15,12 +15,26 @@
 Exchange WebSocket
     -> raw JSONL capture
     -> normalized event files
-    -> C++ deterministic replay
-    -> book snapshots and replay metrics
-    -> Python feature and label generation
+    -> Python reference replay
+    -> feature rows
+    -> labeled feature rows
     -> model validation and execution simulation
     -> reports, charts, and benchmark tables
 ```
+
+Current implemented path:
+
+```text
+market_micstr_lab.cli.capture_kraken
+    -> raw JSONL
+    -> market_micstr_lab.cli.normalize
+    -> processed book events JSONL
+    -> market_micstr_lab.cli.build_dataset
+    -> labeled feature rows JSONL
+```
+
+The same implemented path is also available as one orchestrated command through
+`market_micstr_lab.cli.capture_dataset`.
 
 ## C++ Responsibilities
 
@@ -29,13 +43,19 @@ Exchange WebSocket
 - Track replay throughput and latency-sensitive operations.
 - Expose outputs that Python can consume through files or a later binding layer.
 
+The C++ implementation has not started yet beyond the build scaffold.
+
 ## Python Responsibilities
 
-- Capture and normalize data.
-- Generate features and labels.
-- Train baseline models.
-- Run walk-forward validation.
-- Produce charts and tables for the writeup.
+- Normalize raw data into internal events.
+- Capture bounded raw Kraken WebSocket data.
+- Maintain a reference order book for replay correctness.
+- Validate book state.
+- Generate feature rows after book events.
+- Add future mid-price labels.
+- Build labeled JSONL datasets from the command line.
+- Run capture-to-dataset orchestration from the command line.
+- Later: capture live data, train baseline models, run walk-forward validation, and produce charts.
 
 ## Validation Principles
 

@@ -28,6 +28,8 @@ Use `data/` for local/manual samples and future captures. Use `tests/fixtures/` 
 
 Do not store market-data files inside `src/market_micstr_lab/`; that folder is for package code.
 
+Raw capture files produced by `market_micstr_lab.cli.capture_kraken` should go under `data/raw/`.
+
 ## Raw Envelope
 
 Every exchange payload should be wrapped before it is written to raw JSONL.
@@ -134,4 +136,63 @@ At this phase, tests should prove:
 - The pipeline converts raw JSONL into processed JSONL.
 - The CLI can run the pipeline from the command line.
 
-Later phases will add order-book reconstruction checks, checksum validation, and replay invariants.
+The current code also validates:
+
+- Positive prices.
+- Non-negative quantities.
+- Missing bid/ask side detection.
+- Crossed-book detection.
+- Replay validation with `recv_seq` in failure messages.
+
+Later phases will add exchange checksum validation and live-capture integrity checks.
+
+Current raw capture supports bounded Kraken WebSocket collection by `--max-messages` or `--seconds`.
+
+## Feature Row
+
+Feature rows are generated after replaying each processed book event.
+
+```json
+{
+  "recv_seq": 1,
+  "exchange_ts": "2026-07-03T10:00:00.000000Z",
+  "event_type": "snapshot",
+  "symbol": "BTC/USD",
+  "feature_depth": 1,
+  "best_bid_price": "100.00",
+  "best_bid_qty": "3.0",
+  "best_ask_price": "100.50",
+  "best_ask_qty": "1.0",
+  "spread": "0.50",
+  "mid_price": "100.25",
+  "microprice": "100.375",
+  "bid_depth_1": "3.0",
+  "ask_depth_1": "1.0",
+  "imbalance_1": "0.5",
+  "is_valid": true
+}
+```
+
+Decimal values are written as strings to preserve exactness at the JSON boundary.
+
+## Labeled Feature Row
+
+Labeled rows extend feature rows with future mid-price fields.
+
+```json
+{
+  "mid_price": "100.25",
+  "future_mid_price_10": "100.75",
+  "mid_price_delta_10": "0.50",
+  "mid_price_direction_10": 1
+}
+```
+
+Direction convention:
+
+```text
+ 1 = future mid-price increased beyond threshold
+ 0 = future mid-price stayed within threshold
+-1 = future mid-price decreased beyond threshold
+null = future mid-price unavailable
+```

@@ -7,7 +7,7 @@ name = "market-micstr-lab"
 version = "0.1.0"
 description = "Market microstructure research and execution simulation lab"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["websockets>=12"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

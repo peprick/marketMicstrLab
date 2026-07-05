@@ -35,9 +35,30 @@ L2 order-book snapshots and incremental updates from a public WebSocket feed.
 ## Success Criteria
 
 - Reproducible data sample and normalized event schema.
+- Python reference order-book replay with validation.
 - Deterministic C++ order-book replay.
-- Unit tests for book updates and edge cases.
+- Unit tests for book updates, edge cases, feature generation, labels, and CLI entry points.
 - Benchmark report for replay throughput and latency distribution.
 - Python research notebook or script producing clean charts.
 - Honest validation with baselines, costs, and negative results included.
 - A 6-10 page research writeup that explains assumptions and limitations.
+
+## Implemented So Far
+
+- Project scaffold with Python package and C++ build skeleton.
+- Raw JSONL and processed JSONL helpers.
+- Kraken-style book/trade normalization.
+- Offline normalization CLI.
+- Python order-book replay and validation.
+- Book-derived feature generation.
+- Future mid-price direction labels.
+- Dataset builder CLI.
+- Bounded Kraken WebSocket raw capture CLI.
+- End-to-end capture-to-dataset CLI.
+
+## Near-Term Next Steps
+
+- Add committed fixture data with non-empty raw and processed examples.
+- Add checksum validation for captured book messages.
+- Add baseline research scripts for simple imbalance prediction.
+- Add chart generation for mid-price, spread, and imbalance.

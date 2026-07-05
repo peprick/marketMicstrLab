@@ -3,9 +3,11 @@ from decimal import Decimal
 
 
 class OrderBook:
+
     def __init__(self) -> None:
         self.bids: dict[Decimal, Decimal] = {}
         self.asks: dict[Decimal, Decimal] = {}
+
 
     def apply(self, event: dict) -> None:
         if event["channel"] != "book":
@@ -20,16 +22,26 @@ class OrderBook:
 
         self._apply_levels(self.bids, event.get("bids", []))
         self._apply_levels(self.asks, event.get("asks", []))
+        
+        
 
     def _apply_levels(self, side: dict[Decimal, Decimal], levels: list[list[str]]) -> None:
         for price_str, qty_str in levels:
             price = Decimal(price_str)
             qty = Decimal(qty_str)
 
+            if price <= 0:
+                raise ValueError(f"Price must be positive: {price}")
+
+            if qty < 0:
+                raise ValueError(f"Quantity cannot be negative: {qty}")
+
             if qty == 0:
                 side.pop(price, None)
             else:
                 side[price] = qty
+
+
 
     def best_bid(self) -> tuple[Decimal, Decimal] | None:
         if not self.bids:
@@ -38,12 +50,16 @@ class OrderBook:
         price = max(self.bids)
         return price, self.bids[price]
 
+
+
     def best_ask(self) -> tuple[Decimal, Decimal] | None:
         if not self.asks:
             return None
 
         price = min(self.asks)
         return price, self.asks[price]
+
+
 
     def spread(self) -> Decimal | None:
         best_bid = self.best_bid()
@@ -53,6 +69,8 @@ class OrderBook:
             return None
 
         return best_ask[0] - best_bid[0]
+        
+        
 
     def mid_price(self) -> Decimal | None:
         best_bid = self.best_bid()
@@ -62,3 +80,47 @@ class OrderBook:
             return None
 
         return (best_bid[0] + best_ask[0]) / Decimal("2")
+        
+        
+        
+    def top_bids(self, n: int) -> list[tuple[Decimal, Decimal]]:
+        return [(price, self.bids[price]) for price in sorted(self.bids, reverse=True)[:n]]
+
+
+
+
+    def top_asks(self, n: int) -> list[tuple[Decimal, Decimal]]:
+        return [(price, self.asks[price]) for price in sorted(self.asks)[:n]]
+        
+        
+        
+    
+    def validation_errors(self) -> list[str]:
+        errors = []
+
+        if not self.bids:
+            errors.append("missing bids")
+
+        if not self.asks:
+            errors.append("missing asks")
+
+        best_bid = self.best_bid()
+        best_ask = self.best_ask()
+
+        if best_bid is not None and best_ask is not None and best_bid[0] >= best_ask[0]:
+            errors.append("crossed book")
+
+        return errors
+
+
+
+
+    def is_valid(self) -> bool:
+        return not self.validation_errors()
+
+
+    def assert_valid(self) -> None:
+        errors = self.validation_errors()
+        if errors:
+            raise ValueError("; ".join(errors))
+
