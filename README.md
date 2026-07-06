@@ -1,6 +1,6 @@
 # Market Microstructure Lab
 
-Market Microstructure Lab is a flagship quant research and engineering project focused on
+Market Microstructure Lab is a quant research and engineering project focused on
 order-book dynamics, short-horizon price movement, and realistic execution assumptions.
 
 The project is intentionally split into two halves:
