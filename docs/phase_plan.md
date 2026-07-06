@@ -13,7 +13,7 @@ Deliverables:
 
 ## Phase 2: Data Schema and Capture
 
-Status: partially complete
+Status: complete
 
 Deliverables:
 
@@ -22,56 +22,56 @@ Deliverables:
 - Offline normalization pipeline and CLI. Done.
 - Bounded Kraken WebSocket capture CLI. Done.
 - End-to-end capture-to-dataset CLI. Done.
-- Small committed sample data capture. Not started.
+- Small local sample data capture. Done.
 - Kraken checksum validation. Done.
-- Data integrity notes. Started in schema docs.
+- Data integrity notes. Done in schema docs.
 
 ## Phase 3: C++ Order-Book Replay
 
-Status: not started
+Status: partially complete
 
 Deliverables:
 
-- Snapshot apply logic.
-- Incremental update apply logic.
-- Top-of-book and depth queries.
-- Deterministic replay CLI.
-- Unit tests for core book behavior.
+- Snapshot apply logic. Done.
+- Incremental update apply logic. Done.
+- Top-of-book and depth queries. Done.
+- Deterministic replay benchmark. Done.
+- Unit tests for core book behavior. Done.
 
-Note: a Python reference order book now exists and should guide the future C++ version.
+Remaining: full C++ JSONL replay over normalized exchange files.
 
 ## Phase 4: Research Pipeline
 
-Status: partially complete
+Status: complete
 
 Deliverables:
 
 - Feature generation. Done for book-derived features.
 - Label generation. Done for future mid-price direction.
 - Dataset builder CLI. Done.
-- Baseline models. Started with simple imbalance threshold rule.
-- Walk-forward validation. Not started.
-- Charts. Not started.
+- Baseline models. Done for simple imbalance threshold rule.
+- Walk-forward validation. Done.
+- Charts. Done.
 
 ## Phase 5: Execution Simulator
 
-Status: not started
+Status: partially complete
 
 Deliverables:
 
-- Fee model.
-- Latency delay model.
-- Slippage assumptions.
-- Queue-position approximation.
-- PnL and risk attribution.
+- Fee model. Done.
+- Latency delay model. Not started.
+- Slippage assumptions. Done.
+- Queue-position approximation. Not started.
+- PnL and risk attribution. Done.
 
 ## Phase 6: Portfolio Finish
 
-Status: not started
+Status: partially complete
 
 Deliverables:
 
-- Benchmarks.
-- Research writeup.
-- Final README polish.
-- Reproducibility instructions.
+- Benchmarks. Done for C++ synthetic replay.
+- Research writeup. Done as Markdown.
+- Final README polish. Done.
+- Reproducibility instructions. Done for local workflow.

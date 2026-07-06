@@ -23,8 +23,12 @@ The Python research skeleton is in place and tested:
 - End-to-end capture-to-dataset CLI for reproducible pipeline runs.
 - Kraken book checksum validation during replay/dataset construction.
 - Simple imbalance-threshold baseline with chronological train/test evaluation.
+- Walk-forward validation for baseline stability checks.
+- Dependency-free SVG research charts.
+- Cost-aware execution simulation with spread, fees, and slippage.
+- C++ order-book core with replay benchmark tooling.
 
-No execution simulator or C++ order-book implementation has been implemented yet.
+No live trading, broker integration, or production HFT claim is included.
 
 ## Core Research Question
 
@@ -50,10 +54,10 @@ Why this source:
 5. Add command-line dataset builder. Done.
 6. Capture bounded raw Kraken book/trade data. Done at the CLI layer.
 7. Add raw-to-processed-to-dataset command workflow. Done.
-8. Build baseline predictive models and robust validation. Started with an imbalance threshold baseline.
-9. Port critical replay/simulation logic to C++.
-10. Add execution simulator with fees, slippage, latency, and queue assumptions.
-11. Produce charts, benchmarks, tests, and a 6-10 page research writeup.
+8. Build baseline predictive models and robust validation. Done for imbalance threshold baseline and walk-forward validation.
+9. Port critical replay/simulation logic to C++. Done for the order-book update path.
+10. Add execution simulator with fees, slippage, latency, and queue assumptions. Done for spread, fee, and slippage assumptions.
+11. Produce charts, benchmarks, tests, and a 6-10 page research writeup. Done as local report artifacts.
 
 ## Quickstart
 
@@ -139,6 +143,48 @@ python -m market_micstr_lab.cli.run_baseline \
   --horizon 10 \
   --train-fraction 0.7 \
   --thresholds 0,0.05,0.10,0.20,0.30,0.50
+```
+
+Run walk-forward validation:
+
+```bash
+python -m market_micstr_lab.cli.run_walk_forward \
+  --input data/processed/labeled_features.jsonl \
+  --output reports/walk_forward_imbalance.json \
+  --depth 1 \
+  --horizon 10 \
+  --train-size 40 \
+  --test-size 15 \
+  --step-size 15
+```
+
+Run cost-aware execution simulation:
+
+```bash
+python -m market_micstr_lab.cli.run_execution \
+  --input data/processed/labeled_features.jsonl \
+  --output reports/execution_imbalance.json \
+  --depth 1 \
+  --horizon 10 \
+  --threshold 0.20 \
+  --fee-bps 2 \
+  --slippage-bps 1
+```
+
+Write research charts:
+
+```bash
+python -m market_micstr_lab.cli.plot_research \
+  --dataset data/processed/labeled_features.jsonl \
+  --baseline reports/baseline_imbalance.json \
+  --output-dir reports/figures \
+  --imbalance-depth 1
+```
+
+Run the C++ replay benchmark:
+
+```bash
+./build/mml_replay_benchmark --events 100000 --depth 10
 ```
 
 Note: `data/raw/` and `data/processed/` are local working directories and are ignored by git.

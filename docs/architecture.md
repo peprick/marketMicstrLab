@@ -31,6 +31,10 @@ market_micstr_lab.cli.capture_kraken
     -> processed book events JSONL
     -> market_micstr_lab.cli.build_dataset
     -> labeled feature rows JSONL
+    -> market_micstr_lab.cli.run_baseline
+    -> market_micstr_lab.cli.run_walk_forward
+    -> market_micstr_lab.cli.run_execution
+    -> market_micstr_lab.cli.plot_research
 ```
 
 The same implemented path is also available as one orchestrated command through
@@ -43,7 +47,7 @@ The same implemented path is also available as one orchestrated command through
 - Track replay throughput and latency-sensitive operations.
 - Expose outputs that Python can consume through files or a later binding layer.
 
-The C++ implementation has not started yet beyond the build scaffold.
+The current C++ implementation covers the order-book update path and a synthetic replay benchmark. Full normalized JSONL replay remains future work.
 
 ## Python Responsibilities
 
@@ -57,7 +61,10 @@ The C++ implementation has not started yet beyond the build scaffold.
 - Build labeled JSONL datasets from the command line.
 - Run capture-to-dataset orchestration from the command line.
 - Run simple baseline research reports from labeled feature rows.
-- Later: capture larger live samples, run walk-forward validation, and produce charts.
+- Run walk-forward validation.
+- Run cost-aware execution simulation.
+- Produce dependency-free SVG research charts.
+- Later: capture larger live samples and add richer predictive models.
 
 ## Validation Principles
 

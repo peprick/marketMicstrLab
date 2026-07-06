@@ -57,9 +57,15 @@ L2 order-book snapshots and incremental updates from a public WebSocket feed.
 - End-to-end capture-to-dataset CLI.
 - Kraken book checksum validation.
 - Simple imbalance-threshold baseline report.
+- Walk-forward validation report.
+- SVG chart generation.
+- Cost-aware execution simulation.
+- C++ order-book core and synthetic replay benchmark.
+- Research writeup and benchmark notes.
 
 ## Near-Term Next Steps
 
-- Add committed fixture data with non-empty raw and processed examples.
-- Add chart generation for mid-price, spread, and imbalance.
-- Extend baseline validation beyond a simple chronological split.
+- Capture larger market-data samples.
+- Add C++ JSONL replay over normalized exchange events.
+- Add latency and queue-position execution assumptions.
+- Add repeated benchmark runs with latency percentiles.
