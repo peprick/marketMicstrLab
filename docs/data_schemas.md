@@ -143,8 +143,9 @@ The current code also validates:
 - Missing bid/ask side detection.
 - Crossed-book detection.
 - Replay validation with `recv_seq` in failure messages.
+- Kraken book checksum validation after each book event.
 
-Later phases will add exchange checksum validation and live-capture integrity checks.
+Later phases will add broader live-capture integrity checks.
 
 Current raw capture supports bounded Kraken WebSocket collection by `--max-messages` or `--seconds`.
 

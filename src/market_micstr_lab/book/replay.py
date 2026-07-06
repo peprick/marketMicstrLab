@@ -15,19 +15,39 @@ class ReplayValidationError(ValueError):
         super().__init__(message)
 
 
-def replay_events(events: Iterable[dict], validate: bool = False) -> OrderBook:
+def replay_events(
+    events: Iterable[dict],
+    validate: bool = False,
+    validate_checksum: bool = False,
+    checksum_depth: int = 10,
+) -> OrderBook:
     book = OrderBook()
 
     for event_index, event in enumerate(events):
         book.apply(event)
 
+        errors = []
         if validate:
-            errors = book.validation_errors()
-            if errors:
-                raise ReplayValidationError(event_index, event, errors)
+            errors.extend(book.validation_errors())
+
+        if validate_checksum:
+            errors.extend(book.checksum_errors(event, depth=checksum_depth))
+
+        if errors:
+            raise ReplayValidationError(event_index, event, errors)
 
     return book
 
 
-def replay_jsonl(path: str | Path, validate: bool = False) -> OrderBook:
-    return replay_events(read_jsonl(path), validate=validate)
+def replay_jsonl(
+    path: str | Path,
+    validate: bool = False,
+    validate_checksum: bool = False,
+    checksum_depth: int = 10,
+) -> OrderBook:
+    return replay_events(
+        read_jsonl(path),
+        validate=validate,
+        validate_checksum=validate_checksum,
+        checksum_depth=checksum_depth,
+    )

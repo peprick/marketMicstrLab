@@ -12,6 +12,8 @@ def main() -> None:
     parser.add_argument("--horizon", type=int, default=1)
     parser.add_argument("--threshold", default="0")
     parser.add_argument("--validate", action="store_true")
+    parser.add_argument("--validate-checksum", action="store_true")
+    parser.add_argument("--checksum-depth", type=int, default=10)
 
     args = parser.parse_args()
 
@@ -22,6 +24,8 @@ def main() -> None:
         horizon=args.horizon,
         threshold=Decimal(args.threshold),
         validate=args.validate,
+        validate_checksum=args.validate_checksum,
+        checksum_depth=args.checksum_depth,
     )
 
     print(f"Wrote {count} labeled feature rows to {args.output}")

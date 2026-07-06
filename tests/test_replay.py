@@ -3,6 +3,7 @@ import pytest
 from market_micstr_lab.book.replay import ReplayValidationError
 from decimal import Decimal
 
+from market_micstr_lab.book.order_book import OrderBook
 from market_micstr_lab.book.replay import replay_events, replay_jsonl
 from market_micstr_lab.data.jsonl import write_jsonl
 
@@ -90,3 +91,38 @@ def test_replay_without_validation_allows_crossed_book() -> None:
     )
 
     assert "crossed book" in book.validation_errors()
+
+
+def test_replay_checksum_validation_accepts_matching_checksum() -> None:
+    event = {
+        "channel": "book",
+        "event_type": "snapshot",
+        "recv_seq": 1,
+        "bids": [["100.00", "3.0"]],
+        "asks": [["100.50", "1.0"]],
+    }
+    expected_book = OrderBook()
+    expected_book.apply(event)
+
+    book = replay_events(
+        [{**event, "checksum": expected_book.kraken_checksum()}],
+        validate_checksum=True,
+    )
+
+    assert book.best_bid() == (Decimal("100.00"), Decimal("3.0"))
+
+
+def test_replay_checksum_validation_raises_on_mismatch() -> None:
+    events = [
+        {
+            "channel": "book",
+            "event_type": "snapshot",
+            "recv_seq": 25,
+            "checksum": 123,
+            "bids": [["100.00", "3.0"]],
+            "asks": [["100.50", "1.0"]],
+        }
+    ]
+
+    with pytest.raises(ReplayValidationError, match="checksum mismatch"):
+        replay_events(events, validate_checksum=True)

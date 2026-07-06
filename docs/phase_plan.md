@@ -23,6 +23,7 @@ Deliverables:
 - Bounded Kraken WebSocket capture CLI. Done.
 - End-to-end capture-to-dataset CLI. Done.
 - Small committed sample data capture. Not started.
+- Kraken checksum validation. Done.
 - Data integrity notes. Started in schema docs.
 
 ## Phase 3: C++ Order-Book Replay
@@ -48,7 +49,7 @@ Deliverables:
 - Feature generation. Done for book-derived features.
 - Label generation. Done for future mid-price direction.
 - Dataset builder CLI. Done.
-- Baseline models. Not started.
+- Baseline models. Started with simple imbalance threshold rule.
 - Walk-forward validation. Not started.
 - Charts. Not started.
 

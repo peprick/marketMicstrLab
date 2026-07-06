@@ -12,11 +12,15 @@ def build_labeled_feature_rows(
     horizon: int = 1,
     threshold: Decimal = Decimal("0"),
     validate: bool = False,
+    validate_checksum: bool = False,
+    checksum_depth: int = 10,
 ) -> list[dict]:
     feature_rows = feature_rows_from_jsonl(
         input_path,
         depth=depth,
         validate=validate,
+        validate_checksum=validate_checksum,
+        checksum_depth=checksum_depth,
     )
 
     return add_future_mid_price_labels(
@@ -33,6 +37,8 @@ def write_labeled_feature_rows_jsonl(
     horizon: int = 1,
     threshold: Decimal = Decimal("0"),
     validate: bool = False,
+    validate_checksum: bool = False,
+    checksum_depth: int = 10,
 ) -> int:
     rows = build_labeled_feature_rows(
         input_path,
@@ -40,6 +46,8 @@ def write_labeled_feature_rows_jsonl(
         horizon=horizon,
         threshold=threshold,
         validate=validate,
+        validate_checksum=validate_checksum,
+        checksum_depth=checksum_depth,
     )
 
     write_jsonl(output_path, rows)

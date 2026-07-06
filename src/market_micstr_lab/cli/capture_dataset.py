@@ -25,6 +25,8 @@ async def capture_dataset(
     horizon: int = 1,
     threshold: Decimal = Decimal("0"),
     validate: bool = False,
+    validate_checksum: bool = False,
+    checksum_depth: int = 10,
     capture_func: Any = capture_messages,
 ) -> dict[str, int]:
     raw_count = await capture_func(
@@ -50,6 +52,8 @@ async def capture_dataset(
         horizon=horizon,
         threshold=threshold,
         validate=validate,
+        validate_checksum=validate_checksum,
+        checksum_depth=checksum_depth,
     )
 
     return {
@@ -75,6 +79,8 @@ def main() -> None:
     parser.add_argument("--horizon", type=int, default=1)
     parser.add_argument("--threshold", default="0")
     parser.add_argument("--validate", action="store_true")
+    parser.add_argument("--validate-checksum", action="store_true")
+    parser.add_argument("--checksum-depth", type=int, default=10)
 
     args = parser.parse_args()
 
@@ -95,6 +101,8 @@ def main() -> None:
             horizon=args.horizon,
             threshold=Decimal(args.threshold),
             validate=args.validate,
+            validate_checksum=args.validate_checksum,
+            checksum_depth=args.checksum_depth,
         )
     )
 

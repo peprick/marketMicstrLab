@@ -32,6 +32,8 @@ def feature_rows_from_events(
     events: Iterable[dict],
     depth: int = 1,
     validate: bool = False,
+    validate_checksum: bool = False,
+    checksum_depth: int = 10,
 ) -> list[dict]:
     book = OrderBook()
     rows = []
@@ -42,6 +44,11 @@ def feature_rows_from_events(
         if validate:
             book.assert_valid()
 
+        if validate_checksum:
+            checksum_errors = book.checksum_errors(event, depth=checksum_depth)
+            if checksum_errors:
+                raise ValueError("; ".join(checksum_errors))
+
         rows.append(feature_row_from_event(event, book, depth=depth))
 
     return rows
@@ -51,11 +58,15 @@ def feature_rows_from_jsonl(
     input_path: str | Path,
     depth: int = 1,
     validate: bool = False,
+    validate_checksum: bool = False,
+    checksum_depth: int = 10,
 ) -> list[dict]:
     return feature_rows_from_events(
         read_jsonl(input_path),
         depth=depth,
         validate=validate,
+        validate_checksum=validate_checksum,
+        checksum_depth=checksum_depth,
     )
 
 
@@ -64,7 +75,15 @@ def write_feature_rows_jsonl(
     output_path: str | Path,
     depth: int = 1,
     validate: bool = False,
+    validate_checksum: bool = False,
+    checksum_depth: int = 10,
 ) -> int:
-    rows = feature_rows_from_jsonl(input_path, depth=depth, validate=validate)
+    rows = feature_rows_from_jsonl(
+        input_path,
+        depth=depth,
+        validate=validate,
+        validate_checksum=validate_checksum,
+        checksum_depth=checksum_depth,
+    )
     write_jsonl(output_path, rows)
     return len(rows)

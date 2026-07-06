@@ -51,11 +51,13 @@ The C++ implementation has not started yet beyond the build scaffold.
 - Capture bounded raw Kraken WebSocket data.
 - Maintain a reference order book for replay correctness.
 - Validate book state.
+- Validate Kraken book checksums when exchange checksums are present.
 - Generate feature rows after book events.
 - Add future mid-price labels.
 - Build labeled JSONL datasets from the command line.
 - Run capture-to-dataset orchestration from the command line.
-- Later: capture live data, train baseline models, run walk-forward validation, and produce charts.
+- Run simple baseline research reports from labeled feature rows.
+- Later: capture larger live samples, run walk-forward validation, and produce charts.
 
 ## Validation Principles
 

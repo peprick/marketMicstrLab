@@ -56,3 +56,15 @@ def test_cli_build_dataset(tmp_path) -> None:
     assert rows[0]["mid_price"] == "100.25"
     assert rows[0]["future_mid_price_1"] == "100.75"
     assert rows[0]["mid_price_direction_1"] == 1
+
+
+def test_cli_build_dataset_help_includes_checksum_validation() -> None:
+    result = subprocess.run(
+        [sys.executable, "-m", "market_micstr_lab.cli.build_dataset", "--help"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "--validate-checksum" in result.stdout
+    assert "--checksum-depth" in result.stdout
