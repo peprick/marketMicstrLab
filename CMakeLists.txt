@@ -13,6 +13,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(mml_core
     cpp/src/version.cpp
+    cpp/src/order_book.cpp
 )
 
 target_include_directories(mml_core
@@ -29,6 +30,15 @@ target_link_libraries(mml_smoke
         mml_core
 )
 
+add_executable(mml_replay_benchmark
+    cpp/tools/benchmark_replay.cpp
+)
+
+target_link_libraries(mml_replay_benchmark
+    PRIVATE
+        mml_core
+)
+
 enable_testing()
 
 add_executable(mml_core_tests
@@ -41,3 +51,20 @@ target_link_libraries(mml_core_tests
 )
 
 add_test(NAME mml_core_tests COMMAND mml_core_tests)
+
+
+add_executable(mml_order_book_tests
+    cpp/tests/test_order_book.cpp
+)
+
+target_link_libraries(mml_order_book_tests
+    PRIVATE
+        mml_core
+)
+
+add_test(NAME mml_order_book_tests COMMAND mml_order_book_tests)
+
+add_test(
+    NAME mml_replay_benchmark_smoke
+    COMMAND mml_replay_benchmark --events 1000 --depth 10
+)

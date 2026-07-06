@@ -92,6 +92,7 @@ def evaluate_imbalance_rule(
         str(label): {str(prediction): 0 for prediction in DIRECTIONS}
         for label in DIRECTIONS
     }
+
     correct = 0
     evaluated = 0
 
@@ -102,6 +103,7 @@ def evaluate_imbalance_rule(
 
         prediction = predict_from_imbalance(row.get(feature_key), threshold=threshold)
         evaluated += 1
+
         if prediction == label:
             correct += 1
 
@@ -145,6 +147,7 @@ def run_imbalance_baseline(
 
     best_index = 0
     best_accuracy = Decimal("-1")
+
     for index, result in enumerate(train_results):
         accuracy = result["accuracy"]
         score = Decimal(str(accuracy)) if accuracy is not None else Decimal("-1")
@@ -194,6 +197,7 @@ def write_imbalance_baseline_report_json(
 
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
+
     with path.open("w", encoding="utf-8") as file:
         json.dump(report, file, indent=2, sort_keys=True)
         file.write("\n")
