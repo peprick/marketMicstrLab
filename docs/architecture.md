@@ -56,7 +56,8 @@ The C++ implementation has not started yet beyond the build scaffold.
 - Add future mid-price labels.
 - Build labeled JSONL datasets from the command line.
 - Run capture-to-dataset orchestration from the command line.
-- Later: capture live data, train baseline models, run walk-forward validation, and produce charts.
+- Run simple baseline research reports from labeled feature rows.
+- Later: capture larger live samples, run walk-forward validation, and produce charts.
 
 ## Validation Principles
 

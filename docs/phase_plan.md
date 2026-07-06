@@ -49,7 +49,7 @@ Deliverables:
 - Feature generation. Done for book-derived features.
 - Label generation. Done for future mid-price direction.
 - Dataset builder CLI. Done.
-- Baseline models. Not started.
+- Baseline models. Started with simple imbalance threshold rule.
 - Walk-forward validation. Not started.
 - Charts. Not started.
 

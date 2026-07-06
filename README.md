@@ -22,8 +22,9 @@ The Python research skeleton is in place and tested:
 - Kraken WebSocket raw capture CLI with bounded capture by message count or time.
 - End-to-end capture-to-dataset CLI for reproducible pipeline runs.
 - Kraken book checksum validation during replay/dataset construction.
+- Simple imbalance-threshold baseline with chronological train/test evaluation.
 
-No predictive model, execution simulator, or C++ order-book implementation has been implemented yet.
+No execution simulator or C++ order-book implementation has been implemented yet.
 
 ## Core Research Question
 
@@ -49,7 +50,7 @@ Why this source:
 5. Add command-line dataset builder. Done.
 6. Capture bounded raw Kraken book/trade data. Done at the CLI layer.
 7. Add raw-to-processed-to-dataset command workflow. Done.
-8. Build baseline predictive models and robust validation.
+8. Build baseline predictive models and robust validation. Started with an imbalance threshold baseline.
 9. Port critical replay/simulation logic to C++.
 10. Add execution simulator with fees, slippage, latency, and queue assumptions.
 11. Produce charts, benchmarks, tests, and a 6-10 page research writeup.
@@ -126,6 +127,18 @@ python -m market_micstr_lab.cli.capture_dataset \
   --horizon 10 \
   --validate-checksum \
   --validate
+```
+
+Run the first baseline research report:
+
+```bash
+python -m market_micstr_lab.cli.run_baseline \
+  --input data/processed/labeled_features.jsonl \
+  --output reports/baseline_imbalance.json \
+  --depth 1 \
+  --horizon 10 \
+  --train-fraction 0.7 \
+  --thresholds 0,0.05,0.10,0.20,0.30,0.50
 ```
 
 Note: `data/raw/` and `data/processed/` are local working directories and are ignored by git.
