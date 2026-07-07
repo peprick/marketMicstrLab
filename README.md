@@ -25,8 +25,9 @@ The Python research skeleton is in place and tested:
 - Simple imbalance-threshold baseline with chronological train/test evaluation.
 - Walk-forward validation for baseline stability checks.
 - Dependency-free SVG research charts.
-- Cost-aware execution simulation with spread, fees, and slippage.
-- C++ order-book core with replay benchmark tooling.
+- Cost-aware execution simulation with spread, fees, slippage, event latency, and queue-fill assumptions.
+- Static local report UI generated from research JSON and SVG artifacts.
+- C++ order-book core with normalized JSONL replay and benchmark percentile tooling.
 
 No live trading, broker integration, or production HFT claim is included.
 
@@ -55,9 +56,9 @@ Why this source:
 6. Capture bounded raw Kraken book/trade data. Done at the CLI layer.
 7. Add raw-to-processed-to-dataset command workflow. Done.
 8. Build baseline predictive models and robust validation. Done for imbalance threshold baseline and walk-forward validation.
-9. Port critical replay/simulation logic to C++. Done for the order-book update path.
-10. Add execution simulator with fees, slippage, latency, and queue assumptions. Done for spread, fee, and slippage assumptions.
-11. Produce charts, benchmarks, tests, and a 6-10 page research writeup. Done as local report artifacts.
+9. Port critical replay/simulation logic to C++. Done for the order-book update path and normalized JSONL replay.
+10. Add execution simulator with fees, slippage, latency, and queue assumptions. Done.
+11. Produce charts, benchmarks, tests, report UI, and a 6-10 page research writeup. Done as local report artifacts.
 
 ## Quickstart
 
@@ -168,7 +169,9 @@ python -m market_micstr_lab.cli.run_execution \
   --horizon 10 \
   --threshold 0.20 \
   --fee-bps 2 \
-  --slippage-bps 1
+  --slippage-bps 1 \
+  --latency-events 1 \
+  --queue-fill-fraction 0.75
 ```
 
 Write research charts:
@@ -181,10 +184,26 @@ python -m market_micstr_lab.cli.plot_research \
   --imbalance-depth 1
 ```
 
+Build the local static report UI:
+
+```bash
+python -m market_micstr_lab.cli.build_report_site \
+  --reports-dir reports \
+  --output reports/site/index.html
+```
+
+Replay normalized JSONL through the C++ order-book path:
+
+```bash
+./build/mml_replay_jsonl \
+  --input data/processed/book_events.jsonl \
+  --scale 100000000
+```
+
 Run the C++ replay benchmark:
 
 ```bash
-./build/mml_replay_benchmark --events 100000 --depth 10
+./build/mml_replay_benchmark --events 100000 --depth 10 --runs 5
 ```
 
 Note: `data/raw/` and `data/processed/` are local working directories and are ignored by git.
@@ -198,6 +217,7 @@ marketMicstrLab/
   docs/                 Project specs and architecture notes
   notebooks/            Research notebooks
   reports/              Research writeup and generated figures
+  reports/site/         Generated local HTML report UI
   src/                  Python package
   tests/                Python tests
   benchmarks/           Benchmark notes and generated results
@@ -205,4 +225,4 @@ marketMicstrLab/
 
 ## Development Rule
 
-Implementation is gated phase by phase. New coding phases should start only after explicit approval.
+Keep the workflow reproducible, keep generated market data out of git, and make every research claim traceable to a command, test, benchmark, or documented assumption.

@@ -1,33 +1,27 @@
-# Market Microstructure Lab Research Writeup
+# Market Microstructure Lab Research Note
 
 ## 1. Objective
 
-This project studies whether short-horizon order-book imbalance, spread, depth, and related microstructure features can predict future mid-price movement after accounting for realistic market frictions.
+Market Microstructure Lab studies whether short-horizon order-book features can explain or predict future mid-price movement after accounting for market frictions.
 
-The implementation is intentionally split into:
+The project separates research tooling from latency-sensitive replay logic:
 
-- Python research tooling for capture, normalization, features, labels, validation, charts, and reports.
-- C++ critical-path tooling for deterministic order-book updates and replay benchmarks.
+- Python handles capture, normalization, reference replay, feature generation, labeling, validation, charts, execution reports, and static report generation.
+- C++ handles deterministic order-book updates, normalized JSONL replay, and replay benchmarks.
 
-The first instrument is BTC/USD from Kraken's public WebSocket v2 feed.
+The first supported public data source is Kraken WebSocket v2 order-book data. The code is structured so additional venues or instruments can be added behind the same normalized event schema.
 
-## 2. Data
+## 2. Data Contract
 
-The current local sample contains:
+Raw exchange messages are stored as JSONL envelopes with local receive metadata. Processed files use normalized JSONL book events with explicit schema version, source, channel, event type, symbol, receive sequence, book depth, bids, asks, and optional exchange checksum.
 
-- 100 raw Kraken WebSocket messages.
-- 96 normalized book events.
-- 96 labeled feature rows.
-
-The sample is deliberately small and should be treated as an integration smoke sample, not a statistically meaningful research dataset.
-
-Raw captures are stored as local JSONL envelopes with local receive timestamps and the original exchange payload. The normalized schema extracts book snapshots and updates into a consistent internal format.
+Local market-data captures are intentionally excluded from git. Reproducible examples should be regenerated from the command-line tools or stored as tiny deterministic fixtures under `tests/fixtures/`.
 
 ## 3. Feature and Label Design
 
-The Python reference replay applies every normalized book event and emits one feature row per event.
+The Python reference replay applies normalized book events in receive order and emits one feature row after each valid book update.
 
-Implemented features include:
+Implemented book features include:
 
 - Best bid and ask.
 - Spread.
@@ -35,28 +29,33 @@ Implemented features include:
 - Microprice.
 - Bid and ask depth.
 - Order-book imbalance at configurable depth.
-- Book validity flag.
+- One-event mid-price change and return.
+- One-event spread change.
+- Rolling 10-event mid-price volatility.
+- One-event order-flow imbalance approximation.
+- Book-validity flag.
 
 Labels are future mid-price direction labels at a configurable event horizon:
 
-- `1` for future mid-price increase.
-- `-1` for future mid-price decrease.
-- `0` for no move beyond the configured threshold.
+- `1` means future mid-price increased beyond the label threshold.
+- `-1` means future mid-price decreased beyond the label threshold.
+- `0` means the move stayed within the threshold.
+- `null` means the future row is unavailable.
+
+Features are computed only from current and past book states. Future rows are used only for labels.
 
 ## 4. Validation
 
-The project avoids random row shuffling. All validation paths preserve chronological order.
+Validation preserves chronological order. Random row shuffling is avoided because it can leak regime information across time.
 
 Implemented validation modes:
 
-- Single chronological train/test split for the first imbalance baseline.
+- Single chronological train/test split for the imbalance-threshold baseline.
 - Walk-forward validation over rolling chronological windows.
-- Kraken book checksum validation when exchange checksums are present.
-- Cost-aware execution simulation after signal generation.
+- Kraken checksum validation when exchange checksums are present.
+- Execution simulation after signal generation.
 
-## 5. Baseline Model
-
-The first baseline is intentionally simple:
+The first baseline is deliberately simple:
 
 ```text
 if imbalance > threshold: predict up
@@ -64,105 +63,66 @@ if imbalance < -threshold: predict down
 otherwise: predict flat
 ```
 
-Thresholds are selected on the training segment and evaluated on future rows.
+Thresholds are selected on training rows and evaluated on future rows.
 
-On the current tiny local sample:
+## 5. Execution Assumptions
 
-- Best threshold: `0`
-- Test rows: 26
-- Test accuracy: 0.0
+Execution simulation applies configurable assumptions after signals are generated:
 
-This result is not evidence against the idea; the sample is too small and mostly flat over the chosen horizon. It is useful because the pipeline correctly reports a negative result instead of hiding it.
+- Spread cost.
+- Fee in basis points.
+- Slippage in basis points.
+- Event latency before entry.
+- Partial queue-fill fraction.
 
-## 6. Walk-Forward Result
+The simulator is a research approximation, not a matching-engine reconstruction. Its purpose is to prevent raw predictive metrics from being confused with executable performance.
 
-The walk-forward report uses:
+## 6. C++ Replay and Benchmarks
 
-- Train size: 40 rows.
-- Test size: 15 rows.
-- Step size: 15 rows.
-- Window count: 3.
-
-On the current local sample:
-
-- Mean test accuracy: 0.0
-- Minimum test accuracy: 0.0
-- Maximum test accuracy: 0.0
-
-The result reinforces that this tiny smoke dataset should not be used to claim predictive edge.
-
-## 7. Execution Simulation
-
-The execution simulation applies spread, fees, and slippage to the imbalance signal.
-
-Current local run:
-
-- Horizon: 10 events.
-- Threshold: 0.20.
-- Fees: 2 bps.
-- Slippage: 1 bps.
-- Trades: 86.
-- Gross PnL: 0.00.
-- Total cost: 3240.062900.
-- Net PnL: -3240.062900.
-- Win rate: 0.0.
-
-This is the most important sanity check in the project so far: a signal that looks active can still be worthless once realistic friction is applied.
-
-## 8. C++ Replay Benchmark
-
-The C++ order book supports:
+The C++ core supports:
 
 - Snapshot application.
 - Incremental bid/ask updates.
 - Top-of-book queries.
 - Depth queries.
-- Spread and mid-price.
+- Spread and mid-price calculations.
 - Basic book validation.
+- Normalized JSONL replay over the internal event schema.
+- Repeated-run benchmark summaries with mean, p50, p95, and p99 nanoseconds per event.
 
-Local synthetic replay benchmark:
+The synthetic benchmark isolates the order-book update path. The normalized JSONL replay executable validates the file-ingestion path. Neither benchmark includes exchange networking or Python overhead.
 
-- Events: 100,000.
-- Depth: 10 levels per side.
-- Throughput: about 34 million updates per second.
-- Average update time: about 29 ns per event.
+## 7. Reporting
 
-This benchmark isolates the order-book update path. It does not include JSON parsing, file I/O, Python overhead, or exchange networking.
+Research commands write JSON reports under `reports/` and SVG figures under `reports/figures/`. These generated outputs are ignored by git.
 
-## 9. Limitations
+The static report UI can be rebuilt from generated artifacts:
 
-Current limitations are substantial and intentionally documented:
+```bash
+python -m market_micstr_lab.cli.build_report_site \
+  --reports-dir reports \
+  --output reports/site/index.html
+```
 
-- The current data sample is tiny.
-- The baseline uses only imbalance and ignores many useful microstructure features.
-- The execution simulator uses a simplified spread/fee/slippage model.
-- Queue position is not yet modeled.
-- No production trading, broker integration, or live execution is attempted.
-- C++ benchmark uses synthetic updates, not full exchange JSONL replay.
+The UI summarizes baseline validation, walk-forward validation, execution assumptions, charts, and compact report metadata.
 
-## 10. Next Improvements
+## 8. Limitations
 
-High-value next steps:
+Current limitations are explicit:
 
-- Capture larger samples across multiple market regimes.
-- Add event-intensity and short-term volatility features.
-- Add queue-position approximation.
-- Add latency-delay simulation.
-- Add richer walk-forward reports and stability plots.
-- Extend C++ tooling toward end-to-end JSONL replay.
+- Public WebSocket data is convenient but not equivalent to paid historical market-data feeds.
+- The first predictive model is a simple imbalance-threshold rule.
+- Queue position is represented by a configurable fill fraction, not full queue reconstruction.
+- Execution is simulated from book states and does not place live orders.
+- The project does not include broker integration or live trading.
 
-## 11. Conclusion
+## 9. Extension Paths
 
-The project now has the core shape of a credible quant engineering portfolio piece:
+Useful future directions:
 
-- Real exchange data capture.
-- Normalization and schema boundaries.
-- Python reference replay.
-- Feature and label generation.
-- Baseline prediction.
-- Walk-forward validation.
-- Cost-aware execution simulation.
-- C++ order-book core and benchmark.
-- Honest reporting of negative results.
-
-The current result should be interpreted as a working research harness, not a profitable strategy. That honesty is the point.
+- Larger captures across different volatility regimes.
+- Multi-instrument and multi-venue comparisons.
+- Stronger predictive baselines.
+- Trade-print-aware queue modeling.
+- Python-to-C++ bindings for in-process replay experiments.
+- Reproducible benchmark reports with compiler, machine, and build metadata.

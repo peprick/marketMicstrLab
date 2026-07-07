@@ -10,7 +10,7 @@ Market Microstructure Lab
 
 ## Objective
 
-Build a serious portfolio project that demonstrates quantitative research judgment and systems engineering ability through order-book data, predictive microstructure features, realistic execution assumptions, tests, and benchmarks.
+Build a reproducible market-microstructure research system that combines order-book data, predictive microstructure features, realistic execution assumptions, tests, and benchmarks.
 
 ## Research Question
 
@@ -40,7 +40,8 @@ L2 order-book snapshots and incremental updates from a public WebSocket feed.
 - Unit tests for book updates, edge cases, feature generation, labels, and CLI entry points.
 - Benchmark report for replay throughput and latency distribution.
 - Python research notebook or script producing clean charts.
-- Honest validation with baselines, costs, and negative results included.
+- Honest validation with baselines, costs, and limitations included.
+- Static local UI that summarizes reports, charts, and assumptions.
 - A 6-10 page research writeup that explains assumptions and limitations.
 
 ## Implemented So Far
@@ -59,13 +60,14 @@ L2 order-book snapshots and incremental updates from a public WebSocket feed.
 - Simple imbalance-threshold baseline report.
 - Walk-forward validation report.
 - SVG chart generation.
-- Cost-aware execution simulation.
-- C++ order-book core and synthetic replay benchmark.
+- Cost-aware execution simulation with latency and queue-fill assumptions.
+- C++ order-book core, normalized JSONL replay, and synthetic replay benchmark percentiles.
+- Static local report UI.
 - Research writeup and benchmark notes.
 
-## Near-Term Next Steps
+## Optional Next Steps
 
 - Capture larger market-data samples.
-- Add C++ JSONL replay over normalized exchange events.
-- Add latency and queue-position execution assumptions.
-- Add repeated benchmark runs with latency percentiles.
+- Add stronger predictive models.
+- Add more realistic queue modeling from trades and book update flow.
+- Add a published read-only report UI for reproducible research runs.

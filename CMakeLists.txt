@@ -12,6 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(mml_core
+    cpp/src/jsonl_replay.cpp
     cpp/src/version.cpp
     cpp/src/order_book.cpp
 )
@@ -35,6 +36,15 @@ add_executable(mml_replay_benchmark
 )
 
 target_link_libraries(mml_replay_benchmark
+    PRIVATE
+        mml_core
+)
+
+add_executable(mml_replay_jsonl
+    cpp/tools/replay_jsonl.cpp
+)
+
+target_link_libraries(mml_replay_jsonl
     PRIVATE
         mml_core
 )
@@ -63,6 +73,17 @@ target_link_libraries(mml_order_book_tests
 )
 
 add_test(NAME mml_order_book_tests COMMAND mml_order_book_tests)
+
+add_executable(mml_jsonl_replay_tests
+    cpp/tests/test_jsonl_replay.cpp
+)
+
+target_link_libraries(mml_jsonl_replay_tests
+    PRIVATE
+        mml_core
+)
+
+add_test(NAME mml_jsonl_replay_tests COMMAND mml_jsonl_replay_tests)
 
 add_test(
     NAME mml_replay_benchmark_smoke

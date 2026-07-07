@@ -62,6 +62,12 @@ def test_feature_rows_from_events_outputs_row_after_each_event() -> None:
     assert len(rows) == 2
     assert rows[0]["imbalance_1"] == "0.5"
     assert rows[1]["imbalance_1"] == "0"
+    assert rows[0]["mid_price_change_1"] is None
+    assert rows[1]["mid_price_change_1"] == "0.00"
+    assert rows[1]["spread_change_1"] == "0.00"
+    assert rows[1]["event_count_10"] == 2
+    assert rows[1]["rolling_mid_volatility_10"] == "0.0"
+    assert rows[1]["order_flow_imbalance_1"] == "-2.0"
 
 
 def test_feature_rows_validation_raises_on_crossed_book() -> None:

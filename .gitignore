@@ -24,6 +24,8 @@ data/processed/
 reports/figures/*.png
 reports/figures/*.svg
 reports/figures/*.pdf
+reports/*.json
+reports/site/
 reports/*.pdf
 benchmarks/results/
 
