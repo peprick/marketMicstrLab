@@ -35,6 +35,7 @@ market_micstr_lab.cli.capture_kraken
     -> market_micstr_lab.cli.run_walk_forward
     -> market_micstr_lab.cli.run_execution
     -> market_micstr_lab.cli.plot_research
+    -> market_micstr_lab.cli.build_report_site
 ```
 
 The same implemented path is also available as one orchestrated command through
@@ -44,10 +45,12 @@ The same implemented path is also available as one orchestrated command through
 
 - Maintain bid and ask books from snapshots and incremental updates.
 - Preserve deterministic replay behavior.
+- Replay normalized JSONL book events through the same core book logic.
 - Track replay throughput and latency-sensitive operations.
+- Report latency percentiles across repeated synthetic benchmark runs.
 - Expose outputs that Python can consume through files or a later binding layer.
 
-The current C++ implementation covers the order-book update path and a synthetic replay benchmark. Full normalized JSONL replay remains future work.
+The current C++ implementation covers the order-book update path, normalized JSONL replay, and a synthetic replay benchmark. It intentionally uses a narrow parser for the internal normalized JSONL contract rather than a general JSON engine.
 
 ## Python Responsibilities
 
@@ -63,8 +66,10 @@ The current C++ implementation covers the order-book update path and a synthetic
 - Run simple baseline research reports from labeled feature rows.
 - Run walk-forward validation.
 - Run cost-aware execution simulation.
+- Model event latency and partial queue fill in execution simulation.
 - Produce dependency-free SVG research charts.
-- Later: capture larger live samples and add richer predictive models.
+- Build a static local report UI from generated JSON reports and figures.
+- Later: capture larger live samples, add richer predictive models, and compare against stronger baselines.
 
 ## Validation Principles
 
@@ -72,3 +77,4 @@ The current C++ implementation covers the order-book update path and a synthetic
 - Avoid leakage from future book states.
 - Report simple baselines before complex models.
 - Include costs, latency, and conservative execution assumptions.
+- Keep generated reports and UI traceable to local commands.

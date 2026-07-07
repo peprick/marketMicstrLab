@@ -28,17 +28,17 @@ Deliverables:
 
 ## Phase 3: C++ Order-Book Replay
 
-Status: partially complete
+Status: complete
 
 Deliverables:
 
 - Snapshot apply logic. Done.
 - Incremental update apply logic. Done.
 - Top-of-book and depth queries. Done.
+- Normalized JSONL replay. Done.
 - Deterministic replay benchmark. Done.
+- Repeated-run benchmark latency percentiles. Done.
 - Unit tests for core book behavior. Done.
-
-Remaining: full C++ JSONL replay over normalized exchange files.
 
 ## Phase 4: Research Pipeline
 
@@ -55,23 +55,32 @@ Deliverables:
 
 ## Phase 5: Execution Simulator
 
-Status: partially complete
+Status: complete
 
 Deliverables:
 
 - Fee model. Done.
-- Latency delay model. Not started.
+- Latency delay model. Done.
 - Slippage assumptions. Done.
-- Queue-position approximation. Not started.
+- Queue-position approximation. Done as configurable fill fraction.
 - PnL and risk attribution. Done.
 
 ## Phase 6: Portfolio Finish
 
-Status: partially complete
+Status: complete
 
 Deliverables:
 
 - Benchmarks. Done for C++ synthetic replay.
 - Research writeup. Done as Markdown.
+- Static local report UI. Done.
 - Final README polish. Done.
 - Reproducibility instructions. Done for local workflow.
+
+## Optional Extensions
+
+- Larger live captures across multiple market regimes.
+- Stronger predictive baselines such as logistic regression or gradient boosting.
+- Python-to-C++ binding layer for in-process replay.
+- More realistic queue modeling from order-book update sizes and trade prints.
+- A published read-only version of the static report UI.

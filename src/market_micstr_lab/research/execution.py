@@ -78,7 +78,75 @@ def simulate_row_execution(
 
     return {
         "recv_seq": row.get("recv_seq"),
+        "signal_recv_seq": row.get("recv_seq"),
+        "entry_recv_seq": row.get("recv_seq"),
+        "exit_recv_seq": row.get("recv_seq"),
         "signal": signal,
+        "latency_events": 0,
+        "queue_fill_fraction": "1",
+        "gross_pnl": _json_decimal(gross_pnl),
+        "cost": _json_decimal(cost),
+        "net_pnl": _json_decimal(net_pnl),
+    }
+
+
+def simulate_delayed_row_execution(
+    rows: list[dict],
+    signal_index: int,
+    depth: int = 1,
+    horizon: int = 1,
+    threshold: Decimal = Decimal("0"),
+    fee_bps: Decimal = Decimal("0"),
+    slippage_bps: Decimal = Decimal("0"),
+    latency_events: int = 0,
+    queue_fill_fraction: Decimal = Decimal("1"),
+) -> dict | None:
+    if latency_events < 0:
+        raise ValueError("latency_events must be non-negative")
+    if not Decimal("0") <= queue_fill_fraction <= Decimal("1"):
+        raise ValueError("queue_fill_fraction must be between 0 and 1")
+
+    imbalance_key = f"imbalance_{depth}"
+    signal_row = rows[signal_index]
+    if signal_row.get(imbalance_key) is None:
+        return None
+
+    entry_index = signal_index + latency_events
+    exit_index = entry_index + horizon
+    if exit_index >= len(rows):
+        return None
+
+    entry_row = rows[entry_index]
+    exit_row = rows[exit_index]
+    signal = predict_from_imbalance(signal_row[imbalance_key], threshold=threshold)
+
+    if signal == 0 or queue_fill_fraction == 0:
+        gross_pnl = Decimal("0")
+        cost = Decimal("0")
+        net_pnl = Decimal("0")
+    else:
+        entry_mid = _to_decimal(entry_row.get("mid_price"))
+        exit_mid = _to_decimal(exit_row.get("mid_price"))
+        if entry_mid is None or exit_mid is None:
+            return None
+
+        gross_pnl = Decimal(signal) * (exit_mid - entry_mid) * queue_fill_fraction
+        cost = execution_cost(
+            entry_row.get("mid_price"),
+            entry_row.get("spread"),
+            fee_bps=fee_bps,
+            slippage_bps=slippage_bps,
+        ) * queue_fill_fraction
+        net_pnl = gross_pnl - cost
+
+    return {
+        "recv_seq": signal_row.get("recv_seq"),
+        "signal_recv_seq": signal_row.get("recv_seq"),
+        "entry_recv_seq": entry_row.get("recv_seq"),
+        "exit_recv_seq": exit_row.get("recv_seq"),
+        "signal": signal,
+        "latency_events": latency_events,
+        "queue_fill_fraction": _json_decimal(queue_fill_fraction),
         "gross_pnl": _json_decimal(gross_pnl),
         "cost": _json_decimal(cost),
         "net_pnl": _json_decimal(net_pnl),
@@ -92,18 +160,39 @@ def simulate_execution_rows(
     threshold: Decimal = Decimal("0"),
     fee_bps: Decimal = Decimal("0"),
     slippage_bps: Decimal = Decimal("0"),
+    latency_events: int = 0,
+    queue_fill_fraction: Decimal = Decimal("1"),
 ) -> list[dict]:
     results = []
 
-    for row in rows:
-        result = simulate_row_execution(
-            row,
-            depth=depth,
-            horizon=horizon,
-            threshold=threshold,
-            fee_bps=fee_bps,
-            slippage_bps=slippage_bps,
-        )
+    if latency_events < 0:
+        raise ValueError("latency_events must be non-negative")
+    if not Decimal("0") <= queue_fill_fraction <= Decimal("1"):
+        raise ValueError("queue_fill_fraction must be between 0 and 1")
+
+    for index, row in enumerate(rows):
+        if latency_events == 0 and queue_fill_fraction == 1:
+            result = simulate_row_execution(
+                row,
+                depth=depth,
+                horizon=horizon,
+                threshold=threshold,
+                fee_bps=fee_bps,
+                slippage_bps=slippage_bps,
+            )
+        else:
+            result = simulate_delayed_row_execution(
+                rows,
+                signal_index=index,
+                depth=depth,
+                horizon=horizon,
+                threshold=threshold,
+                fee_bps=fee_bps,
+                slippage_bps=slippage_bps,
+                latency_events=latency_events,
+                queue_fill_fraction=queue_fill_fraction,
+            )
+
         if result is not None:
             results.append(result)
 
@@ -143,6 +232,8 @@ def run_execution_simulation(
     threshold: Decimal = Decimal("0"),
     fee_bps: Decimal = Decimal("0"),
     slippage_bps: Decimal = Decimal("0"),
+    latency_events: int = 0,
+    queue_fill_fraction: Decimal = Decimal("1"),
 ) -> dict:
     results = simulate_execution_rows(
         rows,
@@ -151,6 +242,8 @@ def run_execution_simulation(
         threshold=threshold,
         fee_bps=fee_bps,
         slippage_bps=slippage_bps,
+        latency_events=latency_events,
+        queue_fill_fraction=queue_fill_fraction,
     )
 
     return {
@@ -160,6 +253,8 @@ def run_execution_simulation(
         "threshold": str(threshold),
         "fee_bps": str(fee_bps),
         "slippage_bps": str(slippage_bps),
+        "latency_events": latency_events,
+        "queue_fill_fraction": str(queue_fill_fraction),
         "summary": summarize_execution(results),
         "rows": results,
     }
@@ -173,6 +268,8 @@ def write_execution_report_json(
     threshold: Decimal = Decimal("0"),
     fee_bps: Decimal = Decimal("0"),
     slippage_bps: Decimal = Decimal("0"),
+    latency_events: int = 0,
+    queue_fill_fraction: Decimal = Decimal("1"),
 ) -> dict:
     report = run_execution_simulation(
         list(read_jsonl(input_path)),
@@ -181,6 +278,8 @@ def write_execution_report_json(
         threshold=threshold,
         fee_bps=fee_bps,
         slippage_bps=slippage_bps,
+        latency_events=latency_events,
+        queue_fill_fraction=queue_fill_fraction,
     )
 
     path = Path(output_path)

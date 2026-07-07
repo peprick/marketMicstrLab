@@ -170,11 +170,26 @@ Feature rows are generated after replaying each processed book event.
   "bid_depth_1": "3.0",
   "ask_depth_1": "1.0",
   "imbalance_1": "0.5",
+  "mid_price_change_1": null,
+  "mid_price_return_1": null,
+  "spread_change_1": null,
+  "event_count_10": 1,
+  "rolling_mid_volatility_10": "0",
+  "order_flow_imbalance_1": null,
   "is_valid": true
 }
 ```
 
 Decimal values are written as strings to preserve exactness at the JSON boundary.
+
+Enriched feature fields:
+
+- `mid_price_change_1`: current mid-price minus prior mid-price.
+- `mid_price_return_1`: one-event mid-price change divided by prior mid-price.
+- `spread_change_1`: current spread minus prior spread.
+- `event_count_10`: number of events observed in the current rolling 10-event window.
+- `rolling_mid_volatility_10`: sample volatility of mid-price over the current rolling 10-event window.
+- `order_flow_imbalance_1`: one-event change in best-bid quantity minus one-event change in best-ask quantity.
 
 ## Labeled Feature Row
 
@@ -197,3 +212,52 @@ Direction convention:
 -1 = future mid-price decreased beyond threshold
 null = future mid-price unavailable
 ```
+
+## Research Report JSON
+
+Research commands write compact JSON reports under `reports/`.
+
+Baseline report:
+
+```json
+{
+  "model": "imbalance_threshold",
+  "feature": "imbalance_1",
+  "label": "mid_price_direction_10",
+  "best_threshold": "0.20",
+  "train": {},
+  "test": {},
+  "threshold_search": []
+}
+```
+
+Walk-forward report:
+
+```json
+{
+  "model": "walk_forward_imbalance_threshold",
+  "window_count": 3,
+  "mean_test_accuracy": 0.5,
+  "windows": []
+}
+```
+
+Execution report:
+
+```json
+{
+  "model": "imbalance_threshold_execution",
+  "fee_bps": "2",
+  "slippage_bps": "1",
+  "latency_events": 1,
+  "queue_fill_fraction": "0.75",
+  "summary": {
+    "trade_count": 10,
+    "win_rate": 0.4,
+    "total_net_pnl": "-0.25"
+  },
+  "rows": []
+}
+```
+
+These files are intentionally easy to inspect and are used by `market_micstr_lab.cli.build_report_site` to generate `reports/site/index.html`.

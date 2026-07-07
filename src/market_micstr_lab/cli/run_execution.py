@@ -13,6 +13,8 @@ def main() -> None:
     parser.add_argument("--threshold", default="0")
     parser.add_argument("--fee-bps", default="0")
     parser.add_argument("--slippage-bps", default="0")
+    parser.add_argument("--latency-events", type=int, default=0)
+    parser.add_argument("--queue-fill-fraction", default="1")
 
     args = parser.parse_args()
 
@@ -24,6 +26,8 @@ def main() -> None:
         threshold=Decimal(args.threshold),
         fee_bps=Decimal(args.fee_bps),
         slippage_bps=Decimal(args.slippage_bps),
+        latency_events=args.latency_events,
+        queue_fill_fraction=Decimal(args.queue_fill_fraction),
     )
 
     summary = report["summary"]

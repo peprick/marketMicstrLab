@@ -9,6 +9,7 @@ from market_micstr_lab.data.jsonl import write_jsonl
 from market_micstr_lab.research.execution import (
     execution_cost,
     run_execution_simulation,
+    simulate_delayed_row_execution,
     simulate_row_execution,
     summarize_execution,
     write_execution_report_json,
@@ -72,7 +73,12 @@ def test_simulate_row_execution_long_signal() -> None:
 
     assert result == {
         "recv_seq": 1,
+        "signal_recv_seq": 1,
+        "entry_recv_seq": 1,
+        "exit_recv_seq": 1,
         "signal": 1,
+        "latency_events": 0,
+        "queue_fill_fraction": "1",
         "gross_pnl": "0.50",
         "cost": "0.10",
         "net_pnl": "0.40",
@@ -92,6 +98,56 @@ def test_simulate_row_execution_short_signal() -> None:
     assert result["signal"] == -1
     assert result["gross_pnl"] == "0.25"
     assert result["net_pnl"] == "0.15"
+
+
+def test_simulate_delayed_row_execution_applies_latency_and_queue_fill() -> None:
+    rows = [
+        {
+            "recv_seq": 1,
+            "mid_price": "100.00",
+            "spread": "0.10",
+            "imbalance_1": "0.80",
+        },
+        {
+            "recv_seq": 2,
+            "mid_price": "100.20",
+            "spread": "0.10",
+            "imbalance_1": "0.70",
+        },
+        {
+            "recv_seq": 3,
+            "mid_price": "100.60",
+            "spread": "0.10",
+            "imbalance_1": "0.10",
+        },
+    ]
+
+    result = simulate_delayed_row_execution(
+        rows,
+        signal_index=0,
+        depth=1,
+        horizon=1,
+        threshold=Decimal("0.20"),
+        fee_bps=Decimal("0"),
+        slippage_bps=Decimal("0"),
+        latency_events=1,
+        queue_fill_fraction=Decimal("0.5"),
+    )
+
+    assert result["signal_recv_seq"] == 1
+    assert result["entry_recv_seq"] == 2
+    assert result["exit_recv_seq"] == 3
+    assert result["gross_pnl"] == "0.200"
+    assert result["cost"] == "0.050"
+    assert result["net_pnl"] == "0.150"
+
+
+def test_delayed_execution_rejects_invalid_latency_and_queue_fill() -> None:
+    with pytest.raises(ValueError, match="latency_events"):
+        simulate_delayed_row_execution(sample_rows(), 0, latency_events=-1)
+
+    with pytest.raises(ValueError, match="queue_fill_fraction"):
+        simulate_delayed_row_execution(sample_rows(), 0, queue_fill_fraction=Decimal("1.1"))
 
 
 def test_summarize_execution() -> None:
@@ -156,6 +212,10 @@ def test_run_execution_cli(tmp_path) -> None:
             "0",
             "--slippage-bps",
             "0",
+            "--latency-events",
+            "0",
+            "--queue-fill-fraction",
+            "1",
         ],
         check=True,
         capture_output=True,
