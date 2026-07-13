@@ -1,68 +1,106 @@
+<div align="center">
+
 # Market Microstructure Lab
 
 Market Microstructure Lab is a quant research and engineering project focused on
 order-book dynamics, short-horizon price movement, and realistic execution assumptions.
 
-The project is intentionally split into two halves:
+<br>
 
-- Python research layer: data capture, cleaning, feature engineering, labeling, modeling, and charts.
-- C++ critical path: order-book replay, deterministic simulation, execution assumptions, tests, and benchmarks.
+`market-microstructure` `order-book` `limit-order-book` `quant-research` `execution-simulation` `cpp20` `python`
 
-## Current Status
+</div>
 
-The Python research skeleton is in place and tested:
+---
 
-- Raw/processed JSONL utilities.
-- Kraken-style book/trade message normalization.
-- Offline normalization CLI.
-- Python reference order-book replay with validation.
-- Book feature extraction: spread, mid-price, microprice, depth, and imbalance.
-- Future mid-price labeling.
-- Dataset builder CLI for labeled feature rows.
-- Kraken WebSocket raw capture CLI with bounded capture by message count or time.
-- End-to-end capture-to-dataset CLI for reproducible pipeline runs.
-- Kraken book checksum validation during replay/dataset construction.
-- Simple imbalance-threshold baseline with chronological train/test evaluation.
-- Walk-forward validation for baseline stability checks.
-- Dependency-free SVG research charts.
-- Cost-aware execution simulation with spread, fees, slippage, event latency, and queue-fill assumptions.
-- Static local report UI generated from research JSON and SVG artifacts.
-- C++ order-book core with normalized JSONL replay and benchmark percentile tooling.
+## What This Project Does
 
-No live trading, broker integration, or production HFT claim is included.
+Market Microstructure Lab turns public order-book messages into a research pipeline:
 
-## Core Research Question
+1. Capture raw exchange WebSocket messages.
+2. Normalize them into a stable internal JSONL schema.
+3. Replay the book in Python for reference correctness.
+4. Generate microstructure features and future mid-price labels.
+5. Run chronological baselines and walk-forward validation.
+6. Simulate execution with spread, fees, slippage, latency, and queue-fill assumptions.
+7. Replay normalized book events in C++ and benchmark the critical path.
+8. Generate charts and a static local report UI.
 
-Can short-horizon order-book imbalance, spread, depth, and event-intensity features predict mid-price movement after accounting for realistic fees, latency, and execution assumptions?
+This is not a live-trading system. It has no broker integration and makes no production HFT claim.
 
-## Planned Data Source
+## At A Glance
 
-Initial data source: Kraken public L2 order-book WebSocket for BTC/USD.
+| Layer | What it contains |
+| --- | --- |
+| Data | Raw JSONL capture, normalized book/trade events, schema docs |
+| Research | Python replay, features, labels, baselines, walk-forward validation |
+| Execution | Cost-aware simulation with latency and partial fill assumptions |
+| Systems | C++20 order book, normalized JSONL replay, replay benchmark percentiles |
+| Reporting | JSON reports, SVG charts, static HTML report UI |
 
-Why this source:
+## Architecture
 
-- Public market data access.
-- Snapshot and incremental update messages.
-- Configurable book depth.
-- Checksum support for book-integrity validation.
+```mermaid
+flowchart LR
+    A["Kraken WebSocket<br>book/trade messages"] --> B["Raw JSONL<br>capture envelope"]
+    B --> C["Normalizer<br>internal event schema"]
+    C --> D["Python replay<br>validation + checksums"]
+    D --> E["Feature rows<br>spread, mid, imbalance, volatility"]
+    E --> F["Future labels<br>mid-price direction"]
+    F --> G["Research reports<br>baseline + walk-forward"]
+    F --> H["Execution simulation<br>costs + latency + queue fill"]
+    C --> I["C++ replay<br>normalized JSONL"]
+    I --> J["Benchmarks<br>mean / p50 / p95 / p99"]
+    G --> K["Charts + report UI"]
+    H --> K
+```
 
-## Planned Milestones
+## Repository Layout
 
-1. Define event schema and research assumptions. Done.
-2. Normalize order-book snapshots and updates. Done for offline JSONL.
-3. Build Python reference order-book replay. Done.
-4. Add feature extraction and labeling in Python. Done.
-5. Add command-line dataset builder. Done.
-6. Capture bounded raw Kraken book/trade data. Done at the CLI layer.
-7. Add raw-to-processed-to-dataset command workflow. Done.
-8. Build baseline predictive models and robust validation. Done for imbalance threshold baseline and walk-forward validation.
-9. Port critical replay/simulation logic to C++. Done for the order-book update path and normalized JSONL replay.
-10. Add execution simulator with fees, slippage, latency, and queue assumptions. Done.
-11. Produce charts, benchmarks, tests, report UI, and a 6-10 page research writeup. Done as local report artifacts.
+```text
+marketMicstrLab/
+  cpp/                  C++ order book, replay tools, benchmarks, tests
+  data/                 Local raw and processed data; ignored by git
+  docs/                 Architecture, schemas, project notes, phase plan
+  reports/              Research note; generated reports are ignored
+  src/                  Python package
+  tests/                Python test suite
+  benchmarks/           Benchmark notes and result guidance
+```
+
+## Requirements
+
+| Tool | Version | Why |
+| --- | --- | --- |
+| Python | 3.11+ | Research pipeline and CLIs |
+| pip | recent | Editable package install |
+| CMake | 3.20+ | C++ build configuration |
+| C++ compiler | C++20 capable | C++ replay and benchmarks |
+| Ninja | optional | Faster CMake builds |
+
+Install the system tools with your platform package manager. Examples:
+
+```bash
+# macOS with Homebrew
+brew install python@3.11 cmake ninja
+
+# Ubuntu / Debian
+sudo apt-get update
+sudo apt-get install python3.11 python3.11-venv cmake ninja-build build-essential
+```
+
+If your system already has Python 3.11+ and CMake, you can skip those commands.
 
 ## Quickstart
 
-Create and activate a Python 3.11 virtual environment, then install the package in editable mode:
+Clone the repository:
+
+```bash
+git clone https://github.com/peprick/marketMicstrLab.git
+cd marketMicstrLab
+```
+
+Create a virtual environment and install the Python package:
 
 ```bash
 python3.11 -m venv .venv
@@ -71,13 +109,13 @@ python -m pip install --upgrade pip
 python -m pip install -e . pytest
 ```
 
-Run the Python test suite:
+Run the Python tests:
 
 ```bash
 pytest tests
 ```
 
-Build and test the C++ scaffold:
+Build and test the C++ targets:
 
 ```bash
 cmake -S . -B build -G Ninja
@@ -85,18 +123,19 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-## Command-Line Tools
-
-Normalize raw exchange JSONL into internal event JSONL:
+If Ninja is not installed, use the default CMake generator:
 
 ```bash
-python -m market_micstr_lab.cli.normalize \
-  --input data/raw/sample_book.jsonl \
-  --output data/processed/book_events.jsonl \
-  --channel book
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
 ```
 
-Capture bounded raw Kraken messages:
+## Full Research Workflow
+
+Generated market data, reports, figures, and report-site outputs are intentionally ignored by git.
+
+### 1. Capture a bounded public book sample
 
 ```bash
 python -m market_micstr_lab.cli.capture_kraken \
@@ -107,7 +146,16 @@ python -m market_micstr_lab.cli.capture_kraken \
   --max-messages 100
 ```
 
-Build labeled feature rows from processed book events:
+### 2. Normalize raw exchange messages
+
+```bash
+python -m market_micstr_lab.cli.normalize \
+  --input data/raw/kraken_btcusd_book.jsonl \
+  --output data/processed/book_events.jsonl \
+  --channel book
+```
+
+### 3. Build labeled feature rows
 
 ```bash
 python -m market_micstr_lab.cli.build_dataset \
@@ -118,7 +166,79 @@ python -m market_micstr_lab.cli.build_dataset \
   --validate
 ```
 
-Run the full live-data pipeline in one command:
+### 4. Run a chronological baseline
+
+```bash
+python -m market_micstr_lab.cli.run_baseline \
+  --input data/processed/labeled_features.jsonl \
+  --output reports/baseline_imbalance.json \
+  --depth 1 \
+  --horizon 10 \
+  --train-fraction 0.7 \
+  --thresholds 0,0.05,0.10,0.20,0.30,0.50
+```
+
+### 5. Run walk-forward validation
+
+```bash
+python -m market_micstr_lab.cli.run_walk_forward \
+  --input data/processed/labeled_features.jsonl \
+  --output reports/walk_forward_imbalance.json \
+  --depth 1 \
+  --horizon 10 \
+  --train-size 40 \
+  --test-size 15 \
+  --step-size 15
+```
+
+### 6. Simulate execution assumptions
+
+```bash
+python -m market_micstr_lab.cli.run_execution \
+  --input data/processed/labeled_features.jsonl \
+  --output reports/execution_imbalance.json \
+  --depth 1 \
+  --horizon 10 \
+  --threshold 0.20 \
+  --fee-bps 2 \
+  --slippage-bps 1 \
+  --latency-events 1 \
+  --queue-fill-fraction 0.75
+```
+
+### 7. Generate charts
+
+```bash
+python -m market_micstr_lab.cli.plot_research \
+  --dataset data/processed/labeled_features.jsonl \
+  --baseline reports/baseline_imbalance.json \
+  --output-dir reports/figures \
+  --imbalance-depth 1
+```
+
+### 8. Build the static report UI
+
+```bash
+python -m market_micstr_lab.cli.build_report_site \
+  --reports-dir reports \
+  --output reports/site/index.html
+```
+
+Open the generated report:
+
+```bash
+python -m http.server 8765 --bind 127.0.0.1 --directory reports/site
+```
+
+Then visit:
+
+```text
+http://127.0.0.1:8765/index.html
+```
+
+## One-Command Capture-To-Dataset Path
+
+After setup, this command captures raw data, normalizes it, and builds labeled feature rows:
 
 ```bash
 python -m market_micstr_lab.cli.capture_dataset \
@@ -134,65 +254,9 @@ python -m market_micstr_lab.cli.capture_dataset \
   --validate
 ```
 
-Run the first baseline research report:
+## C++ Replay And Benchmark Tools
 
-```bash
-python -m market_micstr_lab.cli.run_baseline \
-  --input data/processed/labeled_features.jsonl \
-  --output reports/baseline_imbalance.json \
-  --depth 1 \
-  --horizon 10 \
-  --train-fraction 0.7 \
-  --thresholds 0,0.05,0.10,0.20,0.30,0.50
-```
-
-Run walk-forward validation:
-
-```bash
-python -m market_micstr_lab.cli.run_walk_forward \
-  --input data/processed/labeled_features.jsonl \
-  --output reports/walk_forward_imbalance.json \
-  --depth 1 \
-  --horizon 10 \
-  --train-size 40 \
-  --test-size 15 \
-  --step-size 15
-```
-
-Run cost-aware execution simulation:
-
-```bash
-python -m market_micstr_lab.cli.run_execution \
-  --input data/processed/labeled_features.jsonl \
-  --output reports/execution_imbalance.json \
-  --depth 1 \
-  --horizon 10 \
-  --threshold 0.20 \
-  --fee-bps 2 \
-  --slippage-bps 1 \
-  --latency-events 1 \
-  --queue-fill-fraction 0.75
-```
-
-Write research charts:
-
-```bash
-python -m market_micstr_lab.cli.plot_research \
-  --dataset data/processed/labeled_features.jsonl \
-  --baseline reports/baseline_imbalance.json \
-  --output-dir reports/figures \
-  --imbalance-depth 1
-```
-
-Build the local static report UI:
-
-```bash
-python -m market_micstr_lab.cli.build_report_site \
-  --reports-dir reports \
-  --output reports/site/index.html
-```
-
-Replay normalized JSONL through the C++ order-book path:
+Replay normalized book events:
 
 ```bash
 ./build/mml_replay_jsonl \
@@ -200,29 +264,67 @@ Replay normalized JSONL through the C++ order-book path:
   --scale 100000000
 ```
 
-Run the C++ replay benchmark:
+Run the synthetic update benchmark:
 
 ```bash
 ./build/mml_replay_benchmark --events 100000 --depth 10 --runs 5
 ```
 
-Note: `data/raw/` and `data/processed/` are local working directories and are ignored by git.
-
-## Repository Layout
+The benchmark reports aggregate throughput and per-run latency percentiles:
 
 ```text
-marketMicstrLab/
-  cpp/                  C++ replay and simulation components
-  data/                 Local raw and processed data, ignored by git
-  docs/                 Project specs and architecture notes
-  notebooks/            Research notebooks
-  reports/              Research writeup and generated figures
-  reports/site/         Generated local HTML report UI
-  src/                  Python package
-  tests/                Python tests
-  benchmarks/           Benchmark notes and generated results
+mean_events_per_second
+mean_ns_per_event
+p50_ns_per_event
+p95_ns_per_event
+p99_ns_per_event
 ```
 
-## Development Rule
+## Feature Set
 
-Keep the workflow reproducible, keep generated market data out of git, and make every research claim traceable to a command, test, benchmark, or documented assumption.
+The current Python feature pipeline emits:
+
+- Best bid and ask.
+- Spread.
+- Mid-price.
+- Microprice.
+- Bid and ask depth.
+- Order-book imbalance at configurable depth.
+- One-event mid-price change and return.
+- One-event spread change.
+- Rolling mid-price volatility.
+- One-event order-flow imbalance approximation.
+- Future mid-price direction labels.
+
+## Design Principles
+
+- Keep raw captures and generated reports out of version control.
+- Preserve chronological ordering during validation.
+- Prefer simple baselines before complex models.
+- Make execution assumptions explicit.
+- Keep Python research logic and C++ critical-path logic independently testable.
+- Treat public WebSocket data as useful research input, not as production-grade historical data.
+
+## Troubleshooting
+
+| Problem | Fix |
+| --- | --- |
+| `python3.11: command not found` | Use any installed Python 3.11+ binary, or install Python 3.11+ first. |
+| `ModuleNotFoundError: market_micstr_lab` | Activate `.venv` and run `python -m pip install -e . pytest`. |
+| `cmake: command not found` | Install CMake with your system package manager. |
+| `ninja: command not found` | Install Ninja or run CMake without `-G Ninja`. |
+| Kraken capture does not connect | Check internet access and try a smaller `--max-messages` value first. |
+| Report UI is missing charts | Run `plot_research` before `build_report_site`. |
+
+## Documentation
+
+- [Project spec](docs/project_spec.md)
+- [Architecture](docs/architecture.md)
+- [Data schemas](docs/data_schemas.md)
+- [Phase plan](docs/phase_plan.md)
+- [Research note](reports/research_writeup.md)
+- [Replay benchmark notes](benchmarks/replay_benchmark.md)
+
+## License
+
+This project is licensed under the [Apache License 2.0](LICENSE).
