@@ -2,15 +2,8 @@
 
 # Market Microstructure Lab
 
-**A reproducible Python + C++ research lab for order-book data, short-horizon signals, execution assumptions, and replay benchmarks.**
-
-<br>
-
-![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![C++](https://img.shields.io/badge/C%2B%2B-20-00599C?style=for-the-badge&logo=cplusplus&logoColor=white)
-![CMake](https://img.shields.io/badge/CMake-3.20%2B-064F8C?style=for-the-badge&logo=cmake&logoColor=white)
-![pytest](https://img.shields.io/badge/tests-pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)
-![License](https://img.shields.io/badge/license-Apache--2.0-D22128?style=for-the-badge)
+Market Microstructure Lab is a quant research and engineering project focused on
+order-book dynamics, short-horizon price movement, and realistic execution assumptions.
 
 <br>
 
