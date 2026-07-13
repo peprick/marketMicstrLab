@@ -287,7 +287,7 @@ The current Python feature pipeline emits:
 - Best bid and ask.
 - Spread.
 - Mid-price.
-- Microprice.
+- Micro-price.
 - Bid and ask depth.
 - Order-book imbalance at configurable depth.
 - One-event mid-price change and return.
