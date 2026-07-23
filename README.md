@@ -21,7 +21,7 @@ Market Microstructure Lab turns public order-book messages into a research pipel
 2. Normalize them into a stable internal JSONL schema.
 3. Replay the book in Python for reference correctness.
 4. Generate microstructure features and future mid-price labels.
-5. Run chronological baselines and walk-forward validation.
+5. Run chronological baselines and walk forward validation.
 6. Simulate execution with spread, fees, slippage, latency, and queue-fill assumptions.
 7. Replay normalized book events in C++ and benchmark the critical path.
 8. Generate charts and a static local report UI.
